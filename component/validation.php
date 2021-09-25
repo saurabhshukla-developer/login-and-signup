@@ -56,5 +56,5 @@ class validateInput{
 }
 
 // $validation = new validateInput();
-// $output = $validation->validatePassword('Amisha@123');
+// $output = $validation->validatePassword('Anudgq@123');
 // print_r($output);
