@@ -10,6 +10,5 @@ create table users(
     `user_type` varchar(255) not null,
     `status` boolean default 1,
     `cookie_value` varchar(255) default null,
-    `cookie_expire` timestamp,
     `created_at` timestamp default current_timestamp
 );
