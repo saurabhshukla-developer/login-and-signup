@@ -9,6 +9,10 @@ if(!isset($_SESSION))
 }
 
 
+/**
+ * @method getAllUserDetails ( Get the list of all users)
+ * @return array $row
+ */
 function getAllUserDetails()
 {
     global $conn;

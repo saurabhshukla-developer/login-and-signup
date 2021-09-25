@@ -47,7 +47,6 @@ if(isset($_POST['login-submit'])){
 /**
  * @method loginViaCookie ( For User LogIn through Cookie)
  * @param array $data
- * @param string $baseUrl
  */
 function loginViaCookie($data)
 {
@@ -149,9 +148,7 @@ function validate_signup_form($name, $email, $password, $confpassword, $contactn
 
 /**
  * @method user_login ( For User LogIn)
- * @param string $email
- * @param string $password
- * @param object $conn
+ * @param array $data
  */
 function user_login($data)
 {
@@ -203,7 +200,6 @@ function user_login($data)
  * @param string $password
  * @param string $contactnumber
  * @param string $usertype
- * @param object $conn
  */
 function user_signup($name, $email, $password, $contactnumber, $usertype)
 {
@@ -213,7 +209,16 @@ function user_signup($name, $email, $password, $contactnumber, $usertype)
     $sql = "INSERT INTO users (`name`, `email`, `password`, `contact_number`, `user_type`)
             VALUES ('$name', '$email', '$secure_pass', '$contactnumber', '$usertype')";
     if ($conn->query($sql) === TRUE) {
-        header('Location: '.$baseUrl.'/login.php');
+        $last_id = $conn->insert_id;
+        $_SESSION['userDetails'] = array(
+            'id' => $last_id,
+            'name' => $name,
+            'email' => $email,
+            'contact_number' => $contactnumber,
+            'user_type' => $usertype,
+            'status' => 1
+        );
+        header('Location: '.$baseUrl.'/dashboard.php');
         exit();
     } else {
         header('Location: '.$baseUrl.'/login.php');
@@ -224,7 +229,6 @@ function user_signup($name, $email, $password, $contactnumber, $usertype)
 /**
  * @method check_unique_email ( Check if Email is Unique while signup)
  * @param string $email
- * @param object $conn
  */
 function check_unique_email($email)
 {
@@ -233,7 +237,7 @@ function check_unique_email($email)
     $sql = "select * from users where email='$email'";
     $result = mysqli_query($conn,$sql);
     $row = mysqli_fetch_array($result,MYSQLI_ASSOC);
-    if(count($row) > 0){
+    if(($row !== null) && (count($row) > 0)){
         $_SESSION['errors']['signup-email'] = 'This email is already registered';
         header('Location: '.$baseUrl.'/signup.php');
         exit();

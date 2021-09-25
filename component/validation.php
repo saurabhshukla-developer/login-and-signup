@@ -54,7 +54,3 @@ class validateInput{
         return true;
     }
 }
-
-// $validation = new validateInput();
-// $output = $validation->validatePassword('Anudgq@123');
-// print_r($output);
