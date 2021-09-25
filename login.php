@@ -26,7 +26,7 @@ if(isset($_COOKIE['user_id']) && isset($_COOKIE['user_cookie_value'])){
             background-size: cover;
             background-position: center;
             height:100vh;
-            overflow: hidden;
+            overflow: auto;
             width: 100vw;
         }
     </style>
@@ -37,17 +37,18 @@ if(isset($_COOKIE['user_id']) && isset($_COOKIE['user_cookie_value'])){
 
         </div>
         <div class="col-md-4 bg-white py-5">
-            <div class="container mt-5">
-                <h1 class="">Login to Dashboard</h1><br><br>
+            <div class="container mt-3">
+                <h1 class="">Login to Dashboard</h1><br>
+                <small id="login-error" class="text-danger"><?php if(isset($_SESSION['errors']['login-error'])){ echo $_SESSION['errors']['login-error']; unset($_SESSION['errors']['login-error']);} ?></small>
                 <form action="component/userauth.php" method="post">
                     <div class="form-group pt-2">
                         <label class="font-weight-bold" for="emailid">Email Id:</label>
-                        <input type="email" class="form-control" name="login-email" placeholder="Please Enter Your Email">
+                        <input type="email" class="form-control" name="login-email" placeholder="Please Enter Your Email" required>
                         <small id="login-email-error" class="text-danger"><?php if(isset($_SESSION['errors']['login-email'])){ echo $_SESSION['errors']['login-email']; unset($_SESSION['errors']['login-email']);} ?></small>
                     </div>
                     <div class="form-group pt-2">
                         <label class="font-weight-bold" for="password">Password:</label>
-                        <input type="password" class="form-control" name="login-password" placeholder="Enter Your Password">
+                        <input type="password" class="form-control" name="login-password" placeholder="Enter Your Password" required>
                         <small id="login-email-error" class="text-danger"><?php if(isset($_SESSION['errors']['login-password'])){ echo $_SESSION['errors']['login-password']; unset($_SESSION['errors']['login-password']); } ?></small>
                     </div>
                     <div class="form-check">

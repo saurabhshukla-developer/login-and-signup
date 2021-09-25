@@ -1,6 +1,7 @@
 <?php
 require 'db.php';
 require('config.php');
+require('validation.php');
 $instance = DBConnection::getInstance();
 $conn = $instance->getConnection();
 if(!isset($_SESSION)) 
@@ -14,19 +15,31 @@ if(isset($_POST['signup-submit'])){
     $name = filter_input_value($_POST["signup-name"]);
     $email = filter_input_value($_POST["signup-email"]);
     $password = filter_input_value($_POST["signup-password"]);
+    $confpassword = filter_input_value($_POST["signup-conf-password"]);
     $contactnumber = filter_input_value($_POST["signup-contactnumber"]);
     $usertype = filter_input_value($_POST["signup-usertype"]);
     check_unique_email($email);
+    validate_signup_form($name, $email, $password, $confpassword, $contactnumber, $usertype);
     user_signup($name, $email, $password, $contactnumber, $usertype);
 }
 
 // For Login
 if(isset($_POST['login-submit'])){
     global $baseUrl;
+    $validation = new validateInput();
     $data['email'] = filter_input_value($_POST["login-email"]);
     $data['password'] = filter_input_value($_POST["login-password"]);
     if(isset($_POST["rememberme"])){
         $data['rememberMe'] = filter_input_value($_POST["rememberme"]);
+    }
+
+    // Validate Email
+    $email_validate = $validation->validateEmail($data['email']);
+    if($email_validate !== true)
+    {
+        $_SESSION['errors']['login-email'] = $email_validate;
+        header('Location: '.$baseUrl.'/login.php');
+        exit();
     }
     user_login($data);
 }
@@ -78,6 +91,63 @@ function filter_input_value($data)
 }
 
 /**
+ * @method validate_signup_form ( Validate SignUp Form Values)
+ * @param string $name
+ * @param string $email
+ * @param string $password
+ * @param string $confpassword
+ * @param integer $contactnumber
+ * @param string $usertype
+ */
+function validate_signup_form($name, $email, $password, $confpassword, $contactnumber, $usertype)
+{
+    global $baseUrl;
+    $validation = new validateInput();
+    $validation_error_count = 0;
+    $email_validate             = $validation->validateEmail($email);
+    $password_validate          = $validation->validatePassword($password);
+    $name_validate              = $validation->validateName($name);
+    $contactnumber_validate     = $validation->validateContactNumber($contactnumber);
+
+    if($email_validate !== true)
+    {
+        $validation_error_count++;
+        $_SESSION['errors']['signup-email'] = $email_validate;
+    }
+    if($password_validate !== true)
+    {
+        $validation_error_count++;
+        $_SESSION['errors']['signup-password'] = $password_validate;
+    }
+    if($name_validate !== true)
+    {
+        $validation_error_count++;
+        $_SESSION['errors']['signup-name'] = $name_validate;
+    }
+    if($contactnumber_validate !== true)
+    {
+        $validation_error_count++;
+        $_SESSION['errors']['signup-contactnumber'] = $contactnumber_validate;
+    }
+    if($password != $confpassword)
+    {
+        $validation_error_count++;
+        $_SESSION['errors']['signup-conf-password'] = 'Password and Confirm Password do not match';
+    }
+    if(!in_array($usertype, ['employee', 'admin']))
+    {
+        $validation_error_count++;
+        $_SESSION['errors']['signup-usertype'] = 'User Type can be either Employee or Admin';
+    }
+    
+    if($validation_error_count > 0)
+    {
+        header('Location: '.$baseUrl.'/signup.php');
+        exit();
+    }
+}
+
+/**
  * @method user_login ( For User LogIn)
  * @param string $email
  * @param string $password
@@ -94,6 +164,7 @@ function user_login($data)
     $row = mysqli_fetch_array($result,MYSQLI_ASSOC);
     if(($row !== null) && (count($row) > 0)){
         if (!password_verify($password, $row['password'])){
+            $_SESSION['errors']['login-error'] = 'Incorrect Email Or Password';
             header('Location: '.$baseUrl.'/login.php');
             exit();
         } else {
@@ -119,6 +190,7 @@ function user_login($data)
         }
         // print_r($row[0]['password']);
     } else {
+        $_SESSION['errors']['login-error'] = 'Incorrect Email Or Password';
         header('Location: '.$baseUrl.'/login.php');
         exit();
     }
@@ -162,6 +234,7 @@ function check_unique_email($email)
     $result = mysqli_query($conn,$sql);
     $row = mysqli_fetch_array($result,MYSQLI_ASSOC);
     if(count($row) > 0){
+        $_SESSION['errors']['signup-email'] = 'This email is already registered';
         header('Location: '.$baseUrl.'/signup.php');
         exit();
     }
